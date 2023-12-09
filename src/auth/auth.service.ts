@@ -7,12 +7,12 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UserService,
+    private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
 
   async signIn(username: string, password: string): Promise<string> {
-    const user = await this.usersService.findByUsername(username);
+    const user = await this.userService.findByUsername(username);
 
     if (!user || user.password !== password) {
       throw new UnauthorizedException('Invalid credentials');
@@ -30,7 +30,7 @@ export class AuthService {
   }
 
   async validateUser(payload: any): Promise<any> {
-    const user = await this.usersService.findById(payload.sub);
+    const user = await this.userService.findById(payload.sub);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
