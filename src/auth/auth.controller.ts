@@ -13,8 +13,10 @@ import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
+import { ApiTags } from '@nestjs/swagger';
 
-@Controller('api/auth')
+@Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
