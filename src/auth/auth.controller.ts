@@ -8,12 +8,16 @@ import {
   HttpStatus,
   Request,
   ConflictException,
+  HttpException,
+  Get,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { ApiTags } from '@nestjs/swagger';
+import { GoogleOAuthGuard } from './google-oauth.guard';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -36,14 +40,22 @@ export class AuthController {
       return { access_token: token };
     } catch (error) {
       // Maneja cualquier error de autenticación y devuelve una respuesta adecuada
-      return { message: 'Credenciales inválidas' };
+      throw new HttpException(
+        'Credenciales inválidas',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
+  }
+
+  @Get('google-redirect')
+  @UseGuards(GoogleOAuthGuard)
+  googleAuthRedirect(@Request() req) {
+    return this.authService.googleLogin(req);
   }
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  async signUp(user: User): Promise<string> {
-    // Verificar si el usuario ya existe
+  async signUp(@Body() user: User) {
     const existingUser = await this.userService.findByUsername(user.username);
     if (existingUser) {
       throw new ConflictException('El nombre de usuario ya está en uso');
@@ -53,9 +65,10 @@ export class AuthController {
     const newUser = await this.userService.createUser(user);
 
     // Generar y devolver el token JWT
-    return this.authService.signToken({
+    const token = await this.authService.signToken({
       username: newUser.username,
       password: newUser.password,
     });
+    return { access_token: token };
   }
 }

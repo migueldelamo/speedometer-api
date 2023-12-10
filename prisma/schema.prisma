@@ -13,10 +13,11 @@ datasource db {
 model User {
   id        Int      @id @default(autoincrement())
   username  String    @unique
+  email     String    @unique
   password  String    
+  googleId  String?   @unique    
   name      String
   surname   String
-  email     String
   phone     String
   cars      Car[]
   races     Race[]

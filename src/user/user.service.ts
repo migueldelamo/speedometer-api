@@ -20,8 +20,33 @@ export class UserService {
     return prisma.user.findUnique({ where: { id } });
   }
 
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    return prisma.user.findUnique({
+      where: { googleId },
+    });
+  }
+
   async createUser(userData: Prisma.UserCreateInput) {
     return prisma.user.create({ data: userData });
+  }
+
+  async createGoogleUser(
+    sub: string,
+    name: string,
+    email: string,
+    phone: string,
+  ): Promise<User> {
+    return prisma.user.create({
+      data: {
+        googleId: sub,
+        name,
+        email,
+        phone,
+        username: email,
+        surname: '',
+        password: 'google_password',
+      },
+    });
   }
 
   async updateUser(id: number, userData: Prisma.UserUpdateInput) {

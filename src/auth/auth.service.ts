@@ -40,4 +40,31 @@ export class AuthService {
     const { password, ...result } = user;
     return result;
   }
+
+  async googleLogin(req: any): Promise<string> {
+    // 'req.user' contendrá la información del usuario devuelta por la estrategia de Google
+    const { sub, name, email, phone } = req.user;
+
+    // Comprueba si el usuario ya existe en tu base de datos por su ID de Google (sub)
+    const existingUser = await this.userService.findByGoogleId(sub);
+
+    if (existingUser) {
+      // Si el usuario existe, inicia sesión y devuelve el token JWT
+      const payload = {
+        userId: existingUser.id,
+        username: existingUser.username,
+      };
+      return this.jwtService.signAsync(payload);
+    } else {
+      // Si el usuario no existe, crea un nuevo usuario en tu base de datos y devuelve el token JWT
+      const newUser = await this.userService.createGoogleUser(
+        sub,
+        name,
+        email,
+        phone,
+      );
+      const payload = { userId: newUser.id, username: newUser.username };
+      return this.jwtService.signAsync(payload);
+    }
+  }
 }

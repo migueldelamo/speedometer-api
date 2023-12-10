@@ -7,10 +7,19 @@ import { UserModule } from './user/user.module';
 import { CarModule } from './car/car.module';
 import { CircuitModule } from './circuit/circuit.module';
 import { RaceModule } from './race/race.module';
+import { JwtStrategy } from './auth/jwt.stategy';
+import { GoogleStrategy } from './auth/google.strategy';
 
 @Module({
-  imports: [ConfigModule.forRoot({ ignoreEnvFile: true }), AuthModule, UserModule, CarModule, CircuitModule, RaceModule],
+  imports: [
+    ConfigModule.forRoot({ ignoreEnvFile: true }),
+    AuthModule,
+    UserModule,
+    CarModule,
+    CircuitModule,
+    RaceModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtStrategy, GoogleStrategy],
 })
 export class AppModule {}
