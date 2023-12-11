@@ -9,6 +9,9 @@ import { CircuitModule } from './circuit/circuit.module';
 import { RaceModule } from './race/race.module';
 import { JwtStrategy } from './auth/jwt.stategy';
 import { GoogleStrategy } from './auth/google.strategy';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
+import { GoogleOAuthGuard } from './auth/google-oauth.guard';
 
 @Module({
   imports: [
@@ -20,6 +23,18 @@ import { GoogleStrategy } from './auth/google.strategy';
     RaceModule,
   ],
   controllers: [AppController],
-  providers: [AppService, JwtStrategy, GoogleStrategy],
+  providers: [
+    AppService,
+    JwtStrategy,
+    GoogleStrategy,
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: JwtAuthGuard,
+    // },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: GoogleOAuthGuard,
+    // },
+  ],
 })
 export class AppModule {}
