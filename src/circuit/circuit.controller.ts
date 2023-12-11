@@ -10,7 +10,6 @@ export class CircuitController {
 
   @Get()
   getCircuits(@Query() filters: Prisma.CircuitWhereInput) {
-    console.log('filters', filters);
     return this.circuitService.getCircuits(filters);
   }
 }

@@ -4,6 +4,6 @@ import { CircuitController } from './circuit.controller';
 
 @Module({
   providers: [CircuitService],
-  controllers: [CircuitController]
+  controllers: [CircuitController],
 })
 export class CircuitModule {}

@@ -41,6 +41,8 @@ model Circuit {
   sectors  Int
   country  String
   city     String
+  xCoord   Float?
+  yCoord   Float?
   races    Race[]  
 }
 
