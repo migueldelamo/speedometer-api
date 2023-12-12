@@ -26,6 +26,12 @@ export class UserService {
     });
   }
 
+  async findByAppleId(appleId: string): Promise<User | null> {
+    return prisma.user.findUnique({
+      where: { appleId },
+    });
+  }
+
   async createUser(userData: Prisma.UserCreateInput) {
     return prisma.user.create({ data: userData });
   }
@@ -45,6 +51,26 @@ export class UserService {
         username: email,
         surname: '',
         password: 'google_password',
+      },
+    });
+  }
+
+  async createAppleUser(
+    appleId: string,
+    email: string,
+    name: string,
+    surname: string,
+    phone: string,
+  ): Promise<User> {
+    return prisma.user.create({
+      data: {
+        appleId: appleId,
+        name,
+        surname,
+        email,
+        phone,
+        username: email,
+        password: 'apple_password',
       },
     });
   }

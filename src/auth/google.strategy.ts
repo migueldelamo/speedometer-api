@@ -8,11 +8,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/google/redirect', // Sustituir para producción
+      callbackURL: 'http://localhost:3000/google/redirect', // Sustituir por la url de redirección de la cuenta de google
       scope: [
         'email',
         'profile',
-        'https://www.googleapis.com/auth/user.phonenumbers.read',
+        'https://www.googleapis.com/auth/user.phonenumbers.read', // Solicitar acceso al número de teléfono
       ],
     });
   }

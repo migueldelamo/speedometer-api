@@ -16,9 +16,10 @@ model User {
   email     String    @unique
   password  String    
   googleId  String?   @unique    
+  appleId   String?   @unique    
   name      String
-  surname   String
-  phone     String
+  surname   String?
+  phone     String?
   cars      Car[]
   races     Race[]
 }
@@ -37,8 +38,8 @@ model Car {
 model Circuit {
   id       Int      @id @default(autoincrement())
   name     String
-  distance Float
-  sectors  Int
+  distance Float?
+  sectors  Int?
   country  String
   city     String
   xCoord   Float?

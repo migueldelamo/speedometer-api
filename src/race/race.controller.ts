@@ -13,7 +13,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('race')
 @ApiTags('Races')
-@UseGuards(JwtAuthGuard)
+@UseGuards()
 export class RaceController {
   constructor(private readonly raceService: RaceService) {}
 

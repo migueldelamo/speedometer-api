@@ -7,11 +7,9 @@ import { UserModule } from './user/user.module';
 import { CarModule } from './car/car.module';
 import { CircuitModule } from './circuit/circuit.module';
 import { RaceModule } from './race/race.module';
-import { JwtStrategy } from './auth/jwt.stategy';
+import { JwtStrategy } from './auth/jwt.strategy';
 import { GoogleStrategy } from './auth/google.strategy';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { GoogleOAuthGuard } from './auth/google-oauth.guard';
+import AppleStrategy from 'passport-apple';
 
 @Module({
   imports: [
