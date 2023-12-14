@@ -30,14 +30,18 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('signin')
-  async signIn(@Body() credentials: { username: string; password: string }) {
+  async signIn(
+    @Body() credentials: { username: string; password: string },
+  ): Promise<{
+    access_token: string;
+    user: Partial<User>;
+  }> {
     try {
       // Llama al servicio para manejar la lógica de autenticación
-      const token = await this.authService.signIn(
+      return this.authService.signIn(
         credentials.username,
         credentials.password,
       );
-      return { access_token: token };
     } catch (error) {
       // Maneja cualquier error de autenticación y devuelve una respuesta adecuada
       throw new HttpException(
@@ -61,7 +65,10 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  async signUp(@Body() user: User) {
+  async signUp(@Body() user: User): Promise<{
+    access_token: string;
+    user: Partial<User>;
+  }> {
     return this.authService.signUp(user);
   }
 }
