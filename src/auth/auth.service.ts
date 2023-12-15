@@ -72,13 +72,7 @@ export class AuthService {
       username: user.username,
       sub: user.id,
     });
-    const {
-      id,
-      password: userPassword,
-      googleId,
-      appleId,
-      ...outputUser
-    } = user;
+    const { password: userPassword, googleId, appleId, ...outputUser } = user;
 
     return { access_token, user: outputUser };
   }
@@ -105,7 +99,6 @@ export class AuthService {
     const existingUser = await this.userService.findByGoogleId(sub);
     if (existingUser) {
       const {
-        id,
         password: userPassword,
         googleId,
         appleId,
@@ -128,13 +121,7 @@ export class AuthService {
         email,
         phone,
       );
-      const {
-        id,
-        password: userPassword,
-        googleId,
-        appleId,
-        ...result
-      } = newUser;
+      const { password: userPassword, googleId, appleId, ...result } = newUser;
       const payload = { userId: newUser.id, username: newUser.username };
       return {
         access_token: await this.jwtService.signAsync(payload),
@@ -154,7 +141,6 @@ export class AuthService {
     if (existingUser) {
       // Si el usuario existe, inicia sesión y devuelve el token JWT
       const {
-        id,
         password: userPassword,
         googleId,
         appleId,
@@ -177,7 +163,7 @@ export class AuthService {
         surname,
         phone,
       );
-      const { id, password: userPassword, googleId, ...result } = newUser;
+      const { password: userPassword, googleId, ...result } = newUser;
       const payload = { userId: newUser.id, username: newUser.username };
       return {
         access_token: await this.jwtService.signAsync(payload),
