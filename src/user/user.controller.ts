@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
@@ -21,22 +21,25 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @ApiOperation({ summary: 'Get user by id' })
   @Get(':id')
   getUserById(@Param('id') id: string) {
     const userId = parseInt(id, 10);
     return this.userService.findById(userId);
   }
-
+  @ApiOperation({ summary: 'Get all users' })
   @Get()
   getAllUsers() {
     return this.userService.getAllUsers();
   }
 
+  @ApiOperation({ summary: 'Create user' })
   @Post()
   createUser(@Body() userData: Prisma.UserCreateInput) {
     return this.userService.createUser(userData);
   }
 
+  @ApiOperation({ summary: 'Update user' })
   @Put(':id')
   updateUser(
     @Param('id') id: string,

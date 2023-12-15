@@ -15,7 +15,7 @@ import { AuthService } from './auth.service';
 import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { GoogleStrategy } from './google.strategy';
 import { AppleStrategy } from './apple.strategy';
 
@@ -28,6 +28,7 @@ export class AuthController {
     private readonly jwtService: JwtService,
   ) {}
 
+  @ApiOperation({ summary: 'Sign In' })
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signIn(
@@ -48,18 +49,21 @@ export class AuthController {
     }
   }
 
+  @ApiOperation({ summary: 'Google redirect' })
   @Get('google-redirect')
   @UseGuards(GoogleStrategy)
   googleAuthRedirect(@Request() req) {
     return this.authService.googleLogin(req);
   }
 
+  @ApiOperation({ summary: 'Apple redirect' })
   @Get('apple-redirect')
   @UseGuards(AppleStrategy)
   appleAuthRedirect(@Request() req) {
     return this.authService.appleLogin(req);
   }
 
+  @ApiOperation({ summary: 'Sign up' })
   @HttpCode(HttpStatus.OK)
   @Post('signup')
   async signUp(@Body() user: User): Promise<{
