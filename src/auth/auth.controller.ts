@@ -31,17 +31,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signIn(
-    @Body() credentials: { username: string; password: string },
+    @Body() credentials: { email: string; password: string },
   ): Promise<{
     access_token: string;
     user: Partial<User>;
   }> {
     try {
       // Llama al servicio para manejar la lógica de autenticación
-      return this.authService.signIn(
-        credentials.username,
-        credentials.password,
-      );
+      return this.authService.signIn(credentials.email, credentials.password);
     } catch (error) {
       // Maneja cualquier error de autenticación y devuelve una respuesta adecuada
       throw new HttpException(

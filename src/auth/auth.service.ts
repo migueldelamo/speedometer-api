@@ -32,7 +32,7 @@ export class AuthService {
   async signUp(
     user: User,
   ): Promise<{ access_token: string; user: Partial<User> }> {
-    const existingUser = await this.userService.findByUsername(user.username);
+    const existingUser = await this.userService.findByEmail(user.email);
 
     if (existingUser) {
       throw new ConflictException('El nombre de usuario ya está en uso');
@@ -63,7 +63,7 @@ export class AuthService {
     username: string,
     password: string,
   ): Promise<{ access_token: string; user: Partial<User> }> {
-    const user = await this.userService.findByUsername(username);
+    const user = await this.userService.findByEmail(username);
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
