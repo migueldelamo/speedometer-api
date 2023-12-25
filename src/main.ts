@@ -21,6 +21,6 @@ async function bootstrap() {
 
   // ROUTES GLOBAL PREFIX
   app.setGlobalPrefix('api/v1');
-  await app.listen(3000);
+  await app.listen(process.env.APP_PORT);
 }
 bootstrap();

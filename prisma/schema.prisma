@@ -21,7 +21,7 @@ model User {
   surname   String?
   phone     String?
   cars      Car[]
-  races     Race[]
+  races     UserRace[]
 }
 
 model Car {
@@ -53,6 +53,15 @@ model Race {
   date      DateTime
   circuit   Circuit   @relation(fields: [circuitId], references: [id])
   circuitId Int
-  drivers   User[]
+  users     UserRace[]
+}
+
+model UserRace {
+  raceId    Int
+  userId    Int
+  race      Race     @relation(fields: [raceId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@id([raceId, userId])
 }
 

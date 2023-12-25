@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, Race } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class RaceService {
-  constructor() {}
+  constructor(private readonly userService: UserService) {}
 
   async getAllRaces(): Promise<Race[]> {
     return prisma.race.findMany();
@@ -17,9 +18,12 @@ export class RaceService {
   }
 
   async createRace(raceData: Prisma.RaceCreateInput): Promise<Race> {
-    return prisma.race.create({
-      data: raceData,
+    const { users, ...data } = raceData;
+    const race = prisma.race.create({
+      data: data,
     });
+
+    return race;
   }
 
   async updateRace(
@@ -33,6 +37,8 @@ export class RaceService {
     if (!existingRace) {
       return null; // Carrera no encontrada
     }
+
+    const user = await this.userService.findById(raceData.users[0]);
 
     return prisma.race.update({
       where: { id },

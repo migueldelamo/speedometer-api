@@ -11,7 +11,7 @@ import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { RaceService } from './race.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
-@Controller('race')
+@Controller('races')
 @ApiTags('Races')
 @UseGuards()
 export class RaceController {
