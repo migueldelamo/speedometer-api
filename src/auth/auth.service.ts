@@ -46,8 +46,8 @@ export class AuthService {
 
     // Generar y devolver el token JWT
     const token = await this.signToken({
-      username: newUser.username,
-      password: newUser.password,
+      username: user.username,
+      password: user.password,
     });
     const outputUser = {
       username: newUser.username,

@@ -25,8 +25,8 @@ export class RaceController {
 
   @ApiOperation({ summary: 'Get race by id' })
   @Get(':id')
-  getRaceById(@Param('id') id: number): Promise<any> {
-    return this.raceService.getRaceById(id);
+  getRaceById(@Param('id') id: string): Promise<any> {
+    return this.raceService.getRaceById(Number(id));
   }
   @ApiOperation({ summary: 'Create race' })
   @Post()
@@ -38,5 +38,14 @@ export class RaceController {
   @Put(':id')
   updateRace(@Param('id') id: number, @Body() raceData: any): Promise<any> {
     return this.raceService.updateRace(id, raceData);
+  }
+
+  @ApiOperation({ summary: 'Update race' })
+  @Put(':id/add-users')
+  addUsers(
+    @Param('id') id: string,
+    @Body() body: { userIds: number[] },
+  ): Promise<any> {
+    return this.raceService.addUsersToRace(Number(id), body.userIds);
   }
 }

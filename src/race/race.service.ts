@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Race } from '@prisma/client';
+import { Prisma, Race, User, UserRace } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
 
@@ -11,16 +11,28 @@ export class RaceService {
     return prisma.race.findMany();
   }
 
-  async getRaceById(id: number): Promise<Race | null> {
-    return prisma.race.findUnique({
+  async getRaceById(id: number): Promise<UserRace[] | null> {
+    const race = await prisma.race.findUnique({
       where: { id },
     });
+
+    const userRaces = await prisma.userRace.findMany();
+
+    console.log({ race, userRaces });
+    return userRaces;
   }
 
   async createRace(raceData: Prisma.RaceCreateInput): Promise<Race> {
     const { users, ...data } = raceData;
-    const race = prisma.race.create({
+    const race = await prisma.race.create({
       data: data,
+    });
+
+    prisma.userRace.create({
+      data: {
+        userId: users[0].id,
+        raceId: race.id,
+      },
     });
 
     return race;
@@ -38,11 +50,37 @@ export class RaceService {
       return null; // Carrera no encontrada
     }
 
-    const user = await this.userService.findById(raceData.users[0]);
-
     return prisma.race.update({
       where: { id },
       data: raceData,
     });
+  }
+
+  async addUsersToRace(
+    id: number,
+    userIds: number[],
+  ): Promise<{ race: Partial<Race>; users: Partial<User>[] } | null> {
+    const existingRace = await prisma.race.findUnique({
+      where: { id },
+    });
+
+    if (!existingRace) {
+      return null; // Carrera no encontrada
+    }
+
+    const userPromises = userIds.map((id) => this.userService.findById(id));
+
+    const users = await Promise.all(userPromises).then((users) =>
+      users.filter(Boolean),
+    );
+
+    prisma.userRace.createMany({
+      data: users.map((user) => ({
+        userId: user.id,
+        raceId: existingRace.id,
+      })),
+    });
+
+    return { users, race: existingRace };
   }
 }

@@ -9,31 +9,45 @@ export class UserService {
   constructor() {}
 
   async getAllUsers() {
-    return prisma.user.findMany();
-  }
-
-  async findByEmail(email: string): Promise<User | null> {
-    return prisma.user.findUnique({ where: { email } });
-  }
-
-  async findById(id: number): Promise<User | null> {
-    return prisma.user.findUnique({ where: { id } });
-  }
-
-  async findByGoogleId(googleId: string): Promise<User | null> {
-    return prisma.user.findUnique({
-      where: { googleId },
+    const users = await prisma.user.findMany();
+    return users.map((user) => {
+      const { password, googleId, appleId, ...outputUser } = user;
+      return outputUser;
     });
   }
 
-  async findByAppleId(appleId: string): Promise<User | null> {
-    return prisma.user.findUnique({
-      where: { appleId },
-    });
+  async findByEmail(email: string): Promise<Partial<User> | null> {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (user) {
+      const { password, googleId, appleId, ...outputUser } = user;
+      return outputUser;
+    }
+    return null;
+  }
+
+  async findById(id: number): Promise<Partial<User> | null> {
+    const user = await prisma.user.findUnique({ where: { id } });
+    const { password, googleId, appleId, ...outputUser } = user;
+    return outputUser;
+  }
+
+  async findByGoogleId(googleId: string): Promise<Partial<User> | null> {
+    const user = await prisma.user.findUnique({ where: { googleId } });
+    const { password, appleId, ...outputUser } = user;
+    return outputUser;
+  }
+
+  async findByAppleId(appleId: string): Promise<Partial<User> | null> {
+    const user = await prisma.user.findUnique({ where: { appleId } });
+    const { password, googleId, ...outputUser } = user;
+    return outputUser;
   }
 
   async createUser(userData: Prisma.UserCreateInput) {
-    return prisma.user.create({ data: userData });
+    const user = await prisma.user.create({ data: userData });
+    console.log({ user });
+    const { password, appleId, googleId, ...outputUser } = user;
+    return outputUser;
   }
 
   async createGoogleUser(
@@ -41,8 +55,8 @@ export class UserService {
     name: string,
     email: string,
     phone: string,
-  ): Promise<User> {
-    return prisma.user.create({
+  ): Promise<Partial<User>> {
+    const user = await prisma.user.create({
       data: {
         googleId: sub,
         name,
@@ -53,6 +67,8 @@ export class UserService {
         password: 'google_password',
       },
     });
+    const { password: userPassword, appleId, googleId, ...outputUser } = user;
+    return outputUser;
   }
 
   async createAppleUser(
@@ -61,8 +77,8 @@ export class UserService {
     name: string,
     surname: string,
     phone: string,
-  ): Promise<User> {
-    return prisma.user.create({
+  ): Promise<Partial<User>> {
+    const user = await prisma.user.create({
       data: {
         appleId: appleId,
         name,
@@ -73,6 +89,9 @@ export class UserService {
         password: 'apple_password',
       },
     });
+
+    const { password: userPassword, googleId, ...outputUser } = user;
+    return outputUser;
   }
 
   async updateUser(id: number, userData: Prisma.UserUpdateInput) {
@@ -80,7 +99,19 @@ export class UserService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
-    return prisma.user.update({ where: { id }, data: userData });
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: userData,
+    });
+
+    const {
+      password: userPassword,
+      googleId,
+      appleId,
+      ...outputUser
+    } = updatedUser;
+
+    return outputUser;
   }
 
   async deleteUser(id: number) {

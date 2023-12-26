@@ -39,6 +39,7 @@ export class CircuitService {
       }, {}),
     });
 
+    console.log({ output });
     return output;
   }
   async createCircuit(
