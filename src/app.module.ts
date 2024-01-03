@@ -10,9 +10,14 @@ import { RaceModule } from './race/race.module';
 import { JwtStrategy } from './auth/jwt.strategy';
 import { GoogleStrategy } from './auth/google.strategy';
 import AppleStrategy from 'passport-apple';
+// import { ServeStaticModule } from '@nestjs/serve-static';
+// import { join } from 'path';
 
 @Module({
   imports: [
+    // ServeStaticModule.forRoot({
+    //   rootPath: join(__dirname, '..', 'public'),
+    // }),
     ConfigModule.forRoot({ ignoreEnvFile: true }),
     AuthModule,
     UserModule,
