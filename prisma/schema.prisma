@@ -36,14 +36,13 @@ model Car {
 }
 
 model Circuit {
-  id       Int      @id @default(autoincrement())
-  name     String
-  distance Float?
-  sectors  Int?
-  country  String
-  city     String
-  xCoord   Float?
-  yCoord   Float?
+  id          Int      @id @default(autoincrement())
+  name        String
+  distance    Float?
+  sectors     Int?
+  country     String
+  city        String
+  coordinates String  @db.LongText
   races    Race[]  
 }
 

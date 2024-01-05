@@ -18,7 +18,6 @@ export class RaceService {
 
     const userRaces = await prisma.userRace.findMany();
 
-    console.log({ race, userRaces });
     return userRaces;
   }
 

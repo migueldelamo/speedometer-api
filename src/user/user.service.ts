@@ -45,7 +45,6 @@ export class UserService {
 
   async createUser(userData: Prisma.UserCreateInput) {
     const user = await prisma.user.create({ data: userData });
-    console.log({ user });
     const { password, appleId, googleId, ...outputUser } = user;
     return outputUser;
   }
