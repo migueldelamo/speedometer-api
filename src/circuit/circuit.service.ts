@@ -23,11 +23,6 @@ export class CircuitService {
                     },
                   },
                   {
-                    city: {
-                      contains: value,
-                    },
-                  },
-                  {
                     country: {
                       contains: value,
                     },

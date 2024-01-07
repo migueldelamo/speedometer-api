@@ -3,8 +3,6 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
-import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -26,8 +24,6 @@ async function bootstrap() {
 
   // ROUTES GLOBAL PREFIX
   app.setGlobalPrefix('api/v1');
-  // PUBLIC FILES
-  app.useStaticAssets(join(__dirname, '..', '../public'));
 
   await app.listen(process.env.APP_PORT);
 }
