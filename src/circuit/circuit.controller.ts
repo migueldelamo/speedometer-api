@@ -18,11 +18,13 @@ export class CircuitController {
   constructor(private readonly circuitService: CircuitService) {}
 
   @Get()
-  getCircuits(
-    @Query('query') query: string,
-    @Query() filters: Prisma.CircuitWhereInput,
-  ) {
-    return this.circuitService.getCircuits({ query, ...filters });
+  getCircuits(@Query('ids') ids: string[]) {
+    if (ids) {
+      return this.circuitService.getCircuitsByIds(
+        ids.map((item) => Number(item)),
+      );
+    }
+    return this.circuitService.getAllCircuits();
   }
 
   @ApiOperation({ summary: 'Create circuit' })

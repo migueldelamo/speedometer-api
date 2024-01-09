@@ -6,32 +6,24 @@ import prisma from 'prisma/prisma.service';
 export class CircuitService {
   constructor() {}
 
-  async getCircuits(
-    filters?: Prisma.CircuitWhereInput & { query: string },
-  ): Promise<any> {
+  async getAllCircuits(): Promise<any> {
+    return prisma.circuit.findMany({
+      select: {
+        id: true,
+        name: true,
+        country: true,
+        distance: true,
+      },
+    });
+  }
+
+  async getCircuitsByIds(ids: number[]): Promise<any> {
     const output = prisma.circuit.findMany({
-      where: Object.entries(filters).reduce((acc, item) => {
-        const [key, value] = item;
-        return key === 'query'
-          ? !value
-            ? acc
-            : {
-                OR: [
-                  {
-                    name: {
-                      contains: value,
-                    },
-                  },
-                  {
-                    country: {
-                      contains: value,
-                    },
-                  },
-                ],
-                ...acc,
-              }
-          : { [key]: value, ...acc };
-      }, {}),
+      where: {
+        id: {
+          in: ids,
+        },
+      },
     });
 
     return output;

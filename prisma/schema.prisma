@@ -39,9 +39,9 @@ model Circuit {
   id          Int      @id @default(autoincrement())
   name        String
   distance    Float?
-  sectors     String  @db.LongText
+  sectors     Json?
   country     String
-  coordinates String  @db.LongText
+  coordinates Json?  
   races    Race[]  
 }
 
