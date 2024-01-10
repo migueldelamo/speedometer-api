@@ -14,6 +14,7 @@ import { CircuitModule } from './circuit/circuit.module';
 import { RaceModule } from './race/race.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { UserService } from './user/user.service';
+import { JwtStrategy } from './auth/jwt.strategy';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { UserService } from './user/user.service';
     RaceModule,
   ],
   controllers: [AppController],
-  providers: [AppService, UserService],
+  providers: [AppService, UserService, JwtStrategy],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
