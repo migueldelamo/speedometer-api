@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
@@ -30,9 +31,7 @@ export class AuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async signUp(
-    user: User,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
+  async signUp(user: User): Promise<Partial<User>> {
     const existingUser = await this.userService.findByEmail(user.email);
 
     if (existingUser) {
@@ -42,40 +41,27 @@ export class AuthService {
     // Hasheamos la contraseña antes de guardarla en la base de datos
     user.password = await this.hashPassword(user.password);
 
-    // Crear el nuevo usuario
-    const newUser = await this.userService.createUser(user);
-
-    // Generar y devolver el token JWT
     const token = await this.signToken({
       username: user.username,
       password: user.password,
     });
-    const outputUser = {
-      username: newUser.username,
-      email: newUser.email,
-      name: newUser.name,
-      surname: newUser.surname,
-      phone: newUser.phone,
-    };
-    return { access_token: token, user: outputUser };
+
+    return this.userService.createUser({ ...user, token });
   }
 
-  async signIn(
-    email: string,
-    password: string,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
+  async signIn(email: string, password: string): Promise<Partial<User>> {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const access_token = await this.jwtService.signAsync({
+    const new_token = await this.jwtService.signAsync({
       username: user.username,
       sub: user.id,
     });
-    const { password: userPassword, googleId, appleId, ...outputUser } = user;
-
-    return { access_token, user: outputUser };
+    return this.userService.updateUser(user.id, {
+      token: new_token,
+    });
   }
 
   async validateUser(payload: any): Promise<any> {
@@ -90,86 +76,67 @@ export class AuthService {
     return outputUser;
   }
 
-  async googleLogin(
-    req: any,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
-    // 'req.user' contendrá la información del usuario devuelta por la estrategia de Google
-    const { sub, name, email, phone } = req.user;
+  async googleSignIn(user: Partial<User>): Promise<Partial<User>> {
+    const { googleId, name, email } = user;
 
-    // Comprueba si el usuario ya existe en tu base de datos por su ID de Google (sub)
-    const existingUser = await this.userService.findByGoogleId(sub);
+    const existingUser = await this.userService.findByGoogleId(googleId);
     if (existingUser) {
-      const {
-        password: userPassword,
-        googleId,
-        appleId,
-        ...result
-      } = existingUser;
-      // Si el usuario existe, inicia sesión y devuelve el token JWT
-      const payload = {
-        userId: existingUser.id,
-        username: existingUser.username,
-      };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: result,
-      };
+      // Si el usuario existe, iniciar sesión y actualizar el token JWT
+      const new_token = await this.jwtService.signAsync({
+        username: user.username,
+        googleId: user.id,
+      });
+      const updatedUser = await this.userService.updateUser(user.id, {
+        token: new_token,
+      });
+
+      return updatedUser;
     } else {
-      // Si el usuario no existe, crea un nuevo usuario en tu base de datos y devuelve el token JWT
-      const newUser = await this.userService.createGoogleUser(
-        sub,
+      const password = uuidv4();
+      return this.userService.createUser({
+        googleId,
         name,
         email,
-        phone,
-      );
-      const { password: userPassword, googleId, appleId, ...result } = newUser;
-      const payload = { userId: newUser.id, username: newUser.username };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: result,
-      };
+        password,
+        token: await this.jwtService.signAsync({
+          email,
+          password,
+        }),
+      });
     }
   }
 
-  async appleLogin(
-    req: any,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
-    const { appleId, email, name, surname, phone } = req.user;
+  async appleLogin(user: Partial<User>): Promise<Partial<User>> {
+    const { appleId, email, name, surname } = user;
 
     // Comprueba si el usuario ya existe en tu base de datos por su ID de Apple
     const existingUser = await this.userService.findByAppleId(appleId);
 
     if (existingUser) {
       // Si el usuario existe, inicia sesión y devuelve el token JWT
-      const {
-        password: userPassword,
-        googleId,
-        appleId,
-        ...result
-      } = existingUser;
-      const payload = {
-        userId: existingUser.id,
+      const new_token = await this.jwtService.signAsync({
         username: existingUser.username,
-      };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: result,
-      };
+        sub: existingUser.id,
+      });
+      const updatedUser = await this.userService.updateUser(existingUser.id, {
+        token: new_token,
+      });
+
+      return updatedUser;
     } else {
       // Si el usuario no existe, crea un nuevo usuario en tu base de datos y devuelve el token JWT
-      const newUser = await this.userService.createAppleUser(
+      const password = uuidv4();
+      return this.userService.createUser({
         appleId,
         email,
+        password,
         name,
         surname,
-        phone,
-      );
-      const { password: userPassword, googleId, ...result } = newUser;
-      const payload = { userId: newUser.id, username: newUser.username };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
-        user: result,
-      };
+        token: await this.jwtService.signAsync({
+          email,
+          password,
+        }),
+      });
     }
   }
 }

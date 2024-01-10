@@ -1,5 +1,3 @@
-// user.service.ts
-
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, User } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
@@ -31,6 +29,15 @@ export class UserService {
     return outputUser;
   }
 
+  async findByToken(token: string): Promise<Partial<User> | null> {
+    const user = await prisma.user.findFirst({ where: { token } });
+    console.log(token);
+    console.log(user);
+    if (!user) return null;
+    const { password, googleId, appleId, ...outputUser } = user;
+    return outputUser;
+  }
+
   async findByGoogleId(googleId: string): Promise<Partial<User> | null> {
     const user = await prisma.user.findUnique({ where: { googleId } });
     const { password, appleId, ...outputUser } = user;
@@ -46,50 +53,6 @@ export class UserService {
   async createUser(userData: Prisma.UserCreateInput) {
     const user = await prisma.user.create({ data: userData });
     const { password, appleId, googleId, ...outputUser } = user;
-    return outputUser;
-  }
-
-  async createGoogleUser(
-    sub: string,
-    name: string,
-    email: string,
-    phone: string,
-  ): Promise<Partial<User>> {
-    const user = await prisma.user.create({
-      data: {
-        googleId: sub,
-        name,
-        email,
-        phone,
-        username: email,
-        surname: '',
-        password: 'google_password',
-      },
-    });
-    const { password: userPassword, appleId, googleId, ...outputUser } = user;
-    return outputUser;
-  }
-
-  async createAppleUser(
-    appleId: string,
-    email: string,
-    name: string,
-    surname: string,
-    phone: string,
-  ): Promise<Partial<User>> {
-    const user = await prisma.user.create({
-      data: {
-        appleId: appleId,
-        name,
-        surname,
-        email,
-        phone,
-        username: email,
-        password: 'apple_password',
-      },
-    });
-
-    const { password: userPassword, googleId, ...outputUser } = user;
     return outputUser;
   }
 

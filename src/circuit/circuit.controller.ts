@@ -18,12 +18,7 @@ export class CircuitController {
   constructor(private readonly circuitService: CircuitService) {}
 
   @Get()
-  getCircuits(@Query('ids') ids: string[]) {
-    if (ids) {
-      return this.circuitService.getCircuitsByIds(
-        ids.map((item) => Number(item)),
-      );
-    }
+  getCircuits() {
     return this.circuitService.getAllCircuits();
   }
 

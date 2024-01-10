@@ -11,12 +11,13 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String?    @unique
-  email     String    @unique
+  id        Int         @id @default(autoincrement())
+  username  String?     @unique
+  email     String      @unique
   password  String    
-  googleId  String?   @unique    
-  appleId   String?   @unique    
+  googleId  String?     @unique    
+  appleId   String?     @unique    
+  token     String      @db.LongText
   name      String
   surname   String?
   phone     String?

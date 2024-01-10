@@ -7,27 +7,9 @@ export class CircuitService {
   constructor() {}
 
   async getAllCircuits(): Promise<any> {
-    return prisma.circuit.findMany({
-      select: {
-        id: true,
-        name: true,
-        country: true,
-        distance: true,
-      },
-    });
+    return prisma.circuit.findMany({ orderBy: { name: 'asc' } });
   }
 
-  async getCircuitsByIds(ids: number[]): Promise<any> {
-    const output = prisma.circuit.findMany({
-      where: {
-        id: {
-          in: ids,
-        },
-      },
-    });
-
-    return output;
-  }
   async createCircuit(
     circuitData: Prisma.CircuitCreateInput,
   ): Promise<Circuit> {

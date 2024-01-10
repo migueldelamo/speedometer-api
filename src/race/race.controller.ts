@@ -7,9 +7,8 @@ import {
   Body,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { RaceService } from './race.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('races')
 @ApiTags('Races')

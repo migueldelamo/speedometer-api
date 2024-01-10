@@ -1,5 +1,3 @@
-// user.controller.ts
-
 import {
   Controller,
   Get,
@@ -13,7 +11,6 @@ import {
 import { UserService } from './user.service';
 import { Prisma } from '@prisma/client';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('users')
 @ApiTags('Users')

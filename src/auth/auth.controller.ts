@@ -1,47 +1,29 @@
-// auth/auth.controller.ts
-
 import {
   Controller,
   Post,
   Body,
   HttpCode,
   HttpStatus,
-  Request,
   HttpException,
-  Get,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserService } from 'src/user/user.service';
 import { User } from '@prisma/client';
-import { JwtService } from '@nestjs/jwt';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { GoogleStrategy } from './google.strategy';
-import { AppleStrategy } from './apple.strategy';
 
 @Controller('auth')
 @ApiTags('Auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly userService: UserService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @ApiOperation({ summary: 'Sign In' })
   @HttpCode(HttpStatus.OK)
   @Post('signin')
   async signIn(
     @Body() credentials: { email: string; password: string },
-  ): Promise<{
-    access_token: string;
-    user: Partial<User>;
-  }> {
+  ): Promise<Partial<User>> {
     try {
-      // Llama al servicio para manejar la lógica de autenticación
       return this.authService.signIn(credentials.email, credentials.password);
     } catch (error) {
-      // Maneja cualquier error de autenticación y devuelve una respuesta adecuada
       throw new HttpException(
         'Credenciales inválidas',
         HttpStatus.UNAUTHORIZED,
@@ -49,27 +31,24 @@ export class AuthController {
     }
   }
 
-  @ApiOperation({ summary: 'Google redirect' })
-  @Get('google-redirect')
-  @UseGuards(GoogleStrategy)
-  googleAuthRedirect(@Request() req) {
-    return this.authService.googleLogin(req);
-  }
-
-  @ApiOperation({ summary: 'Apple redirect' })
-  @Get('apple-redirect')
-  @UseGuards(AppleStrategy)
-  appleAuthRedirect(@Request() req) {
-    return this.authService.appleLogin(req);
-  }
-
   @ApiOperation({ summary: 'Sign up' })
   @HttpCode(HttpStatus.OK)
   @Post('signup')
-  async signUp(@Body() user: User): Promise<{
-    access_token: string;
-    user: Partial<User>;
-  }> {
+  async signUp(@Body() user: User): Promise<Partial<User>> {
     return this.authService.signUp(user);
+  }
+
+  @ApiOperation({ summary: 'Google Sign In' })
+  @HttpCode(HttpStatus.OK)
+  @Post('google-signin')
+  async googleSignIn(@Body() user: Partial<User>): Promise<Partial<User>> {
+    return this.authService.googleSignIn(user);
+  }
+
+  @ApiOperation({ summary: 'Apple Sign In' })
+  @HttpCode(HttpStatus.OK)
+  @Post('google-signin')
+  async appleSignIn(@Body() user: Partial<User>): Promise<Partial<User>> {
+    return this.authService.appleLogin(user);
   }
 }
