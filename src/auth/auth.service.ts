@@ -2,6 +2,8 @@
 
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,6 +13,11 @@ import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
 import { v4 as uuidv4 } from 'uuid';
+import {
+  CreateAppleUserDto,
+  CreateGoogleUserDto,
+  CreateUserDto,
+} from 'src/dtos/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -31,29 +38,30 @@ export class AuthService {
     return this.jwtService.signAsync(payload);
   }
 
-  async signUp(user: User): Promise<Partial<User>> {
+  async signUp(user: CreateUserDto): Promise<Partial<User>> {
     const existingUser = await this.userService.findByEmail(user.email);
 
     if (existingUser) {
-      throw new ConflictException('El nombre de usuario ya está en uso');
+      throw new HttpException('Email already exists', HttpStatus.CONFLICT);
     }
 
     // Hasheamos la contraseña antes de guardarla en la base de datos
-    user.password = await this.hashPassword(user.password);
+
+    const password = await this.hashPassword(user.password);
 
     const token = await this.signToken({
-      username: user.username,
+      username: password,
       password: user.password,
     });
 
-    return this.userService.createUser({ ...user, token });
+    return this.userService.createUser({ ...user, token, password });
   }
 
   async signIn(email: string, password: string): Promise<Partial<User>> {
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
     }
     const new_token = await this.jwtService.signAsync({
       username: user.username,
@@ -76,44 +84,13 @@ export class AuthService {
     return outputUser;
   }
 
-  async googleSignIn(user: Partial<User>): Promise<Partial<User>> {
-    const { googleId, name, email } = user;
-
-    const existingUser = await this.userService.findByGoogleId(googleId);
-    if (existingUser) {
-      // Si el usuario existe, iniciar sesión y actualizar el token JWT
-      const new_token = await this.jwtService.signAsync({
-        username: user.username,
-        googleId: user.id,
-      });
-      const updatedUser = await this.userService.updateUser(user.id, {
-        token: new_token,
-      });
-
-      return updatedUser;
-    } else {
-      const password = uuidv4();
-      return this.userService.createUser({
-        googleId,
-        name,
-        email,
-        password,
-        token: await this.jwtService.signAsync({
-          email,
-          password,
-        }),
-      });
-    }
-  }
-
-  async appleLogin(user: Partial<User>): Promise<Partial<User>> {
-    const { appleId, email, name, surname } = user;
-
-    // Comprueba si el usuario ya existe en tu base de datos por su ID de Apple
-    const existingUser = await this.userService.findByAppleId(appleId);
+  async googleSignIn(
+    user: CreateGoogleUserDto | { googleId: string },
+  ): Promise<Partial<User>> {
+    const googleId = user.googleId;
+    const existingUser = await this.userService.findByAppleId(googleId);
 
     if (existingUser) {
-      // Si el usuario existe, inicia sesión y devuelve el token JWT
       const new_token = await this.jwtService.signAsync({
         username: existingUser.username,
         sub: existingUser.id,
@@ -124,19 +101,64 @@ export class AuthService {
 
       return updatedUser;
     } else {
-      // Si el usuario no existe, crea un nuevo usuario en tu base de datos y devuelve el token JWT
-      const password = uuidv4();
-      return this.userService.createUser({
-        appleId,
-        email,
-        password,
-        name,
-        surname,
-        token: await this.jwtService.signAsync({
+      if (user instanceof CreateGoogleUserDto) {
+        if (await this.userService.findByEmail(user.email)) {
+          throw new HttpException('User already created.', HttpStatus.CONFLICT);
+        }
+        const password = uuidv4();
+        const { email, name } = user;
+        return this.userService.createUser({
+          googleId,
           email,
           password,
-        }),
+          name,
+          token: await this.jwtService.signAsync({
+            email,
+            password,
+          }),
+        });
+      } else {
+        throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+      }
+    }
+  }
+
+  async appleLogin(
+    user: CreateAppleUserDto | { appleId: string },
+  ): Promise<Partial<User>> {
+    const appleId = user.appleId;
+    const existingUser = await this.userService.findByAppleId(appleId);
+
+    if (existingUser) {
+      const new_token = await this.jwtService.signAsync({
+        username: existingUser.username,
+        sub: existingUser.id,
       });
+      const updatedUser = await this.userService.updateUser(existingUser.id, {
+        token: new_token,
+      });
+
+      return updatedUser;
+    } else {
+      if (user instanceof CreateAppleUserDto) {
+        if (await this.userService.findByEmail(user.email)) {
+          throw new HttpException('User already created.', HttpStatus.CONFLICT);
+        }
+        const password = uuidv4();
+        const { email, name } = user;
+        return this.userService.createUser({
+          appleId,
+          email,
+          password,
+          name,
+          token: await this.jwtService.signAsync({
+            email,
+            password,
+          }),
+        });
+      } else {
+        throw new HttpException('Bad request', HttpStatus.BAD_REQUEST);
+      }
     }
   }
 }

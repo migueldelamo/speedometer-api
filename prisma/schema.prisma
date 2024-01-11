@@ -19,7 +19,6 @@ model User {
   appleId   String?     @unique    
   token     String      @db.LongText
   name      String
-  surname   String?
   phone     String?
   cars      Car[]
   races     UserRace[]
