@@ -31,8 +31,7 @@ export class UserService {
 
   async findByToken(token: string): Promise<Partial<User> | null> {
     const user = await prisma.user.findFirst({ where: { token } });
-    console.log(token);
-    console.log(user);
+
     if (!user) return null;
     const { password, googleId, appleId, ...outputUser } = user;
     return outputUser;

@@ -8,7 +8,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CircuitService } from './circuit.service';
-import { Prisma } from '@prisma/client';
+import { Circuit, Prisma } from '@prisma/client';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @Controller('circuits')
@@ -24,7 +24,7 @@ export class CircuitController {
 
   @ApiOperation({ summary: 'Create circuit' })
   @Post()
-  createCircuit(@Body() circuitData: any): Promise<any> {
+  createCircuit(@Body() circuitData: any): Promise<Circuit> {
     return this.circuitService.createCircuit(circuitData);
   }
 }

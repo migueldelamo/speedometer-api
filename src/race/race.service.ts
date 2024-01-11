@@ -1,35 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Prisma, Race, User, UserRace } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
+import { CircuitService } from 'src/circuit/circuit.service';
+import { CreateRaceDto } from 'src/dtos/create-race.dto';
+import { UpdateRaceDto } from 'src/dtos/update-race.dto';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class RaceService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly circuitService: CircuitService,
+  ) {}
 
   async getAllRaces(): Promise<Race[]> {
     return prisma.race.findMany();
   }
 
-  async getRaceById(id: number): Promise<UserRace[] | null> {
+  async getRaceById(id: number): Promise<Race | null> {
     const race = await prisma.race.findUnique({
       where: { id },
     });
 
-    const userRaces = await prisma.userRace.findMany();
-
-    return userRaces;
+    return race;
   }
 
-  async createRace(raceData: Prisma.RaceCreateInput): Promise<Race> {
-    const { users, ...data } = raceData;
+  async createRace(raceData: CreateRaceDto): Promise<Race> {
+    const circuit = await this.circuitService.getById(raceData.circuitId);
+    const user = await this.userService.findById(raceData.userId);
+
+    if (!user || !circuit) {
+      throw new HttpException('Invalid data provided', HttpStatus.BAD_REQUEST);
+    }
     const race = await prisma.race.create({
-      data: data,
+      data: {
+        circuitId: circuit.id,
+        date: raceData.date,
+      },
     });
 
     prisma.userRace.create({
       data: {
-        userId: users[0].id,
+        userId: user.id,
         raceId: race.id,
       },
     });
@@ -37,16 +49,13 @@ export class RaceService {
     return race;
   }
 
-  async updateRace(
-    id: number,
-    raceData: Prisma.RaceUpdateInput,
-  ): Promise<Race | null> {
+  async updateRace(id: number, raceData: UpdateRaceDto): Promise<Race> {
     const existingRace = await prisma.race.findUnique({
       where: { id },
     });
 
     if (!existingRace) {
-      return null; // Carrera no encontrada
+      throw new HttpException('Race not found', HttpStatus.NOT_FOUND);
     }
 
     return prisma.race.update({
@@ -58,13 +67,13 @@ export class RaceService {
   async addUsersToRace(
     id: number,
     userIds: number[],
-  ): Promise<{ race: Partial<Race>; users: Partial<User>[] } | null> {
+  ): Promise<{ race: Race; users: Partial<User>[] } | null> {
     const existingRace = await prisma.race.findUnique({
       where: { id },
     });
 
     if (!existingRace) {
-      return null; // Carrera no encontrada
+      throw new HttpException('Race not found', HttpStatus.NOT_FOUND);
     }
 
     const userPromises = userIds.map((id) => this.userService.findById(id));

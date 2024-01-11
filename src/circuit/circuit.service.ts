@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Circuit, Prisma } from '@prisma/client';
 import prisma from 'prisma/prisma.service';
 
@@ -6,8 +6,12 @@ import prisma from 'prisma/prisma.service';
 export class CircuitService {
   constructor() {}
 
-  async getAllCircuits(): Promise<any> {
+  async getAllCircuits(): Promise<Circuit[]> {
     return prisma.circuit.findMany({ orderBy: { name: 'asc' } });
+  }
+
+  async getById(id: number): Promise<Circuit | null> {
+    return prisma.circuit.findUnique({ where: { id } });
   }
 
   async createCircuit(
@@ -27,7 +31,7 @@ export class CircuitService {
     });
 
     if (!existingCircuit) {
-      return null;
+      throw new HttpException('Circuit not found', HttpStatus.NOT_FOUND);
     }
 
     return prisma.circuit.update({

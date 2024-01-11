@@ -72,7 +72,7 @@ export class AuthService {
     });
   }
 
-  async validateUser(payload: any): Promise<any> {
+  async validateUser(payload: any): Promise<Partial<User>> {
     const user = await this.userService.findById(payload.sub);
 
     if (!user) {
