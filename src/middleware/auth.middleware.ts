@@ -17,19 +17,23 @@ export class AuthMiddleware implements NestMiddleware {
       next();
       return;
     }
-    const token = (req.headers.Authorization as string)?.split('Bearer ')?.[1];
+    try {
+      const token = req.headers.authorization as string;
 
-    if (token) {
-      const user = this.validateToken(token);
-      if (user) {
-        req['user'] = user;
+      if (token) {
+        const user = this.validateToken(token);
+        if (user) {
+          req['user'] = user;
+        } else {
+          throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+        }
       } else {
         throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
       }
-    } else {
+      next();
+    } catch {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
-    next();
   }
 
   async validateToken(token: string): Promise<Partial<User> | null> {
